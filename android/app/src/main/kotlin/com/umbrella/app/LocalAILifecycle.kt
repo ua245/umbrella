@@ -6,43 +6,87 @@ import android.content.Intent
 import android.util.Log
 import kotlinx.coroutines.*
 
+/**
+ * Listens for screen ON/OFF broadcasts and manages the 5-minute evaluation loop.
+ * When the screen turns on, starts polling screen text against the Cloud Relay AI.
+ * When the screen turns off, cancels all evaluation to conserve battery.
+ */
 class LocalAILifecycle : BroadcastReceiver() {
-    private var aiJob: Job? = null
-    private val scope = CoroutineScope(Dispatchers.IO)
-    
-    // In a real implementation, this would hold the MediaPipe LLM Inference session
-    private var isGemmaLoaded = false
+
+    companion object {
+        private const val TAG = "UmbrellaLifecycle"
+        private const val EVAL_INTERVAL_MS = 5 * 60 * 1000L // 5 minutes
+    }
+
+    private var evaluationJob: Job? = null
+    private val scope = CoroutineScope(Dispatchers.IO + SupervisorJob())
 
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
             Intent.ACTION_SCREEN_ON -> {
-                Log.d("UmbrellaAI", "Screen ON: Loading Gemma 4 into RAM...")
-                isGemmaLoaded = true
-                startEvaluationLoop()
+                Log.i(TAG, "Screen ON — starting evaluation loop.")
+                startEvaluationLoop(context)
             }
             Intent.ACTION_SCREEN_OFF -> {
-                Log.d("UmbrellaAI", "Screen OFF: Unloading Gemma 4 from RAM...")
-                isGemmaLoaded = false
-                aiJob?.cancel()
+                Log.i(TAG, "Screen OFF — pausing evaluation loop to conserve battery.")
+                evaluationJob?.cancel()
+                evaluationJob = null
             }
         }
     }
 
-    private fun startEvaluationLoop() {
-        aiJob?.cancel()
-        aiJob = scope.launch {
-            while (isActive && isGemmaLoaded) {
-                // Wait 5 minutes
-                delay(5 * 60 * 1000L)
-                
-                val currentText = UmbrellaAccessibilityService.latestScreenText
-                if (currentText.isNotEmpty()) {
-                    Log.d("UmbrellaAI", "Evaluating 5-minute screen summary: ${currentText.take(50)}...")
-                    // 1. Feed currentText to Gemma LLM Inference via MediaPipe
-                    // 2. Evaluate against RuleDict
-                    // 3. Encrypt and pass to reporting module via MethodChannel or direct platform invoke
+    private fun startEvaluationLoop(context: Context) {
+        // Prevent duplicate loops
+        evaluationJob?.cancel()
+
+        evaluationJob = scope.launch {
+            while (isActive) {
+                delay(EVAL_INTERVAL_MS)
+
+                val screenText = UmbrellaAccessibilityService.latestScreenText
+                val activeApp = UmbrellaAccessibilityService.activePackageName
+
+                if (screenText.isBlank()) {
+                    Log.d(TAG, "Screen text empty — skipping evaluation.")
+                    continue
+                }
+
+                Log.d(TAG, "Evaluating screen: pkg=$activeApp text=${screenText.take(80)}...")
+
+                try {
+                    val familyId = getFamilyId(context) ?: run {
+                        Log.w(TAG, "No family_id found — device not yet paired.")
+                        continue
+                    }
+
+                    val response = CloudRelayClient.api.evaluate(
+                        EvaluateRequest(
+                            family_id = familyId,
+                            screen_text = screenText,
+                            active_package = activeApp
+                        )
+                    )
+
+                    Log.i(TAG, "Verdict: ${response.verdict} — ${response.reason}")
+
+                    if (response.verdict == "BLOCK") {
+                        // Draw un-closeable overlay via AccessibilityService
+                        UmbrellaAccessibilityService.instance?.showBlockOverlay(
+                            reason = response.reason ?: "Content blocked by parental rules."
+                        )
+                    }
+
+                } catch (e: CancellationException) {
+                    throw e // Let coroutine cancel cleanly
+                } catch (e: Exception) {
+                    Log.e(TAG, "Evaluation failed: ${e.message}")
                 }
             }
         }
+    }
+
+    private fun getFamilyId(context: Context): String? {
+        val prefs = context.getSharedPreferences("umbrella_prefs", Context.MODE_PRIVATE)
+        return prefs.getString("family_id", null)
     }
 }
