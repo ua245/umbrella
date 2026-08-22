@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>☂️ Umbrella Parent Command Center</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                        },
+                        gemma: {
+                            500: '#9333ea',
+                            600: '#7e22ce',
+                        },
+                        darkBg: '#0b0f19',
+                        darkCard: '#131b2e',
+                        darkBorder: '#1f293d'
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- QRCode.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        code, pre {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .glass-panel {
+            background: rgba(19, 27, 46, 0.75);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glow-brand {
+            box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.35);
+        }
+        .glow-gemma {
+            box-shadow: 0 0 25px -5px rgba(147, 51, 234, 0.35);
+        }
+        /* Custom scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0b0f19;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1f293d;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #374151;
+        }
+    </style>
+</head>
+<body class="bg-darkBg text-slate-100 min-h-screen flex flex-col antialiased selection:bg-brand-500 selection:text-white">
+
+    <!-- Top Navigation Bar -->
+    <header class="sticky top-0 z-50 glass-panel border-b border-darkBorder/60 px-6 py-3.5">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <!-- Brand Logo -->
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-gemma-500 flex items-center justify-center shadow-lg shadow-brand-500/20">
+                    <i class="fa-solid fa-umbrella text-white text-xl"></i>
+                </div>
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <span class="font-extrabold text-xl tracking-tight text-white">Umbrella</span>
+                        <span class="text-xs px-2 py-0.5 rounded-full bg-brand-500/10 text-brand-400 font-semibold border border-brand-500/20">Parent Portal</span>
+                    </div>
+                    <p class="text-xs text-slate-400">Contextual AI Safety Engine • Gemma 4 API</p>
+                </div>
+            </div>
+
+            <!-- Family ID & Device Status -->
+            <div class="flex items-center space-x-4">
+                <div class="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-darkCard border border-darkBorder">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span class="text-xs text-slate-400">Family ID:</span>
+                    <span id="headerFamilyId" class="text-xs font-mono font-bold text-brand-400">fam-umbrella-7729</span>
+                    <button onclick="copyFamilyId()" title="Copy ID" class="text-slate-400 hover:text-white transition ml-1 text-xs">
+                        <i class="fa-regular fa-copy"></i>
+                    </button>
+                </div>
+
+                <button onclick="switchTab('pairing')" class="flex items-center space-x-2 px-3.5 py-1.5 rounded-lg bg-brand-600/90 hover:bg-brand-600 text-white text-xs font-semibold shadow-md shadow-brand-600/20 transition active:scale-95">
+                    <i class="fa-solid fa-qrcode"></i>
+                    <span>Pair Kid Device</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Workspace Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 flex flex-col space-y-6">
+
+        <!-- Navigation Tabs -->
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-darkBorder pb-3">
+            <div class="flex space-x-2 bg-darkCard p-1 rounded-xl border border-darkBorder">
+                <button onclick="switchTab('generator')" id="tab-btn-generator" class="tab-btn active px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center space-x-2 bg-brand-600 text-white shadow-sm">
+                    <i class="fa-solid fa-wand-magic-sparkles text-purple-300"></i>
+                    <span>AI Rule Generator</span>
+                </button>
+                <button onclick="switchTab('dashboard')" id="tab-btn-dashboard" class="tab-btn px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center space-x-2 text-slate-400 hover:text-slate-200">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Activity Feed</span>
+                    <span id="logBadgeCount" class="text-xs px-1.5 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/30">3</span>
+                </button>
+                <button onclick="switchTab('active-rules')" id="tab-btn-active-rules" class="tab-btn px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center space-x-2 text-slate-400 hover:text-slate-200">
+                    <i class="fa-solid fa-shield-halved"></i>
+                    <span>Enforced Rules</span>
+                </button>
+                <button onclick="switchTab('pairing')" id="tab-btn-pairing" class="tab-btn px-4 py-2 rounded-lg text-sm font-semibold transition flex items-center space-x-2 text-slate-400 hover:text-slate-200">
+                    <i class="fa-solid fa-qrcode"></i>
+                    <span>Device Pairing</span>
+                </button>
+            </div>
+
+            <!-- Quick Metrics Summary -->
+            <div class="flex items-center space-x-3 text-xs text-slate-400">
+                <div class="flex items-center space-x-1.5">
+                    <span class="w-2 h-2 rounded-full bg-red-400"></span>
+                    <span>Blocks: <strong id="metricBlocks" class="text-slate-200">2</strong></span>
+                </div>
+                <span>•</span>
+                <div class="flex items-center space-x-1.5">
+                    <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                    <span>Warnings: <strong id="metricWarnings" class="text-slate-200">1</strong></span>
+                </div>
+                <span>•</span>
+                <div class="flex items-center space-x-1.5">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                    <span>DNS SafeSearch: <strong class="text-emerald-400 font-bold">ACTIVE</strong></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 1: AI RULE GENERATOR ==================== -->
+        <div id="tab-generator" class="tab-content grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Left: Natural Language Chat Interface (7 cols) -->
+            <div class="lg:col-span-7 flex flex-col h-[650px] glass-panel rounded-2xl border border-darkBorder overflow-hidden shadow-xl">
+                <!-- Chat Header -->
+                <div class="px-5 py-4 border-b border-darkBorder flex items-center justify-between bg-darkCard/50">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 rounded-lg bg-gemma-500/20 border border-gemma-500/30 flex items-center justify-center text-gemma-400">
+                            <i class="fa-solid fa-brain"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-sm font-bold text-white">Gemma 4 Rule Assistant</h3>
+                            <p class="text-xs text-slate-400">Type natural commands to generate structured security rules</p>
+                        </div>
+                    </div>
+                    <span class="text-xs px-2.5 py-1 rounded-full bg-purple-500/10 text-purple-300 font-medium border border-purple-500/20 flex items-center space-x-1.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-purple-400 animate-ping"></span>
+                        <span>Cloud Run Proxy</span>
+                    </span>
+                </div>
+
+                <!-- Chat History Area -->
+                <div id="chatHistory" class="flex-1 p-5 overflow-y-auto space-y-4">
+                    <!-- Welcome AI message -->
+                    <div class="flex items-start space-x-3">
+                        <div class="w-7 h-7 rounded-full bg-gemma-500 flex items-center justify-center text-white text-xs shrink-0 mt-0.5">
+                            <i class="fa-solid fa-sparkles"></i>
+                        </div>
+                        <div class="bg-darkCard border border-darkBorder text-slate-200 p-4 rounded-2xl rounded-tl-sm text-sm max-w-xl shadow-sm space-y-2">
+                            <p>👋 Hello! I am your <strong>Umbrella AI Assistant</strong> powered by the <strong>Gemma 4 API</strong>.</p>
+                            <p class="text-xs text-slate-400">Tell me what rules you would like to enforce on your child's phone (e.g. <em>"Block gaming during school days"</em>, <em>"Limit TikTok to 30 mins"</em>, or <em>"Bedtime curfew at 9 PM"</em>).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Suggested Prompts Chips -->
+                <div class="px-4 py-2 bg-darkCard/40 border-t border-darkBorder flex items-center space-x-2 overflow-x-auto no-scrollbar">
+                    <span class="text-[11px] font-semibold text-slate-400 shrink-0">Try:</span>
+                    <button onclick="setPrompt('Block all gaming apps and keywords on school nights')" class="shrink-0 text-xs px-2.5 py-1 rounded-full bg-darkCard border border-darkBorder hover:border-brand-500 text-slate-300 transition">🎮 Block gaming on school nights</button>
+                    <button onclick="setPrompt('Limit TikTok and Instagram to 30 mins per day')" class="shrink-0 text-xs px-2.5 py-1 rounded-full bg-darkCard border border-darkBorder hover:border-brand-500 text-slate-300 transition">⏰ 30m limit on TikTok & Reels</button>
+                    <button onclick="setPrompt('Enforce bedtime lock from 9:00 PM to 7:00 AM')" class="shrink-0 text-xs px-2.5 py-1 rounded-full bg-darkCard border border-darkBorder hover:border-brand-500 text-slate-300 transition">🌙 Bedtime curfew: 9PM - 7AM</button>
+                    <button onclick="setPrompt('Strict SafeSearch and block adult or violence categories')" class="shrink-0 text-xs px-2.5 py-1 rounded-full bg-darkCard border border-darkBorder hover:border-brand-500 text-slate-300 transition">🛡️ Strict SafeSearch & NSFW</button>
+                </div>
+
+                <!-- Input Form -->
+                <form id="ruleForm" onsubmit="handleSendPrompt(event)" class="p-3 bg-darkCard border-t border-darkBorder flex items-center space-x-2">
+                    <input type="text" id="promptInput" placeholder="E.g., Block gaming apps and lock screen at 9 PM..." class="flex-1 bg-darkBg border border-darkBorder rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-brand-500 transition">
+                    <button type="submit" id="sendBtn" class="px-5 py-3 rounded-xl bg-brand-600 hover:bg-brand-500 text-white text-sm font-semibold flex items-center space-x-2 shadow-lg shadow-brand-600/20 transition active:scale-95 shrink-0">
+                        <span>Send</span>
+                        <i class="fa-solid fa-paper-plane text-xs"></i>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Right: Interactive RuleDict Visualizer & JSON Inspector (5 cols) -->
+            <div class="lg:col-span-5 flex flex-col h-[650px] space-y-4">
+                <div class="flex-1 glass-panel rounded-2xl border border-darkBorder p-5 flex flex-col overflow-hidden shadow-xl">
+                    <div class="flex items-center justify-between pb-3 border-b border-darkBorder">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-code text-brand-400"></i>
+                            <h3 class="text-sm font-bold text-white">Generated RuleDict Model</h3>
+                        </div>
+                        <span id="ruleStatusBadge" class="text-xs px-2 py-0.5 rounded-full bg-slate-800 text-slate-400 border border-darkBorder">Awaiting Prompt</span>
+                    </div>
+
+                    <!-- Visual Rules Cards View -->
+                    <div id="ruleVisualCard" class="flex-1 overflow-y-auto py-3 space-y-3.5">
+                        <div class="text-center py-12 text-slate-500">
+                            <i class="fa-solid fa-wand-magic text-3xl mb-3 opacity-40"></i>
+                            <p class="text-sm">Type a prompt in the chat to see structured AI rules materialize here.</p>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Action Controls -->
+                    <div class="pt-3 border-t border-darkBorder flex items-center space-x-3">
+                        <button onclick="toggleJsonInspector()" id="toggleJsonBtn" class="flex-1 py-2.5 px-3 rounded-xl bg-darkCard border border-darkBorder hover:border-slate-600 text-xs font-semibold text-slate-300 transition flex items-center justify-center space-x-2">
+                            <i class="fa-regular fa-file-code"></i>
+                            <span id="jsonBtnText">Inspect Raw JSON</span>
+                        </button>
+                        <button onclick="deployCurrentRules()" id="deployRulesBtn" disabled class="flex-1 py-2.5 px-3 rounded-xl bg-brand-600 hover:bg-brand-500 disabled:opacity-50 disabled:cursor-not-allowed text-xs font-bold text-white shadow-lg shadow-brand-600/20 transition flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-tower-broadcast"></i>
+                            <span>Sync to Kid Device</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Raw JSON Inspector Drawer / Card (Hidden by default) -->
+                <div id="rawJsonSection" class="hidden glass-panel rounded-2xl border border-darkBorder p-4 flex flex-col space-y-2 h-64 overflow-hidden">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-mono font-bold text-slate-400">JSON SCHEMA VERDICT:</span>
+                        <button onclick="copyJsonOutput()" class="text-xs text-brand-400 hover:text-brand-300 flex items-center space-x-1">
+                            <i class="fa-regular fa-copy"></i>
+                            <span>Copy</span>
+                        </button>
+                    </div>
+                    <pre id="jsonOutput" class="flex-1 bg-darkBg/90 p-3 rounded-xl text-[11px] text-emerald-400 overflow-auto border border-darkBorder">{ "status": "no_rules_yet" }</pre>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- ==================== TAB 2: REAL-TIME ACTIVITY DASHBOARD ==================== -->
+        <div id="tab-dashboard" class="tab-content hidden flex-col space-y-5">
+            <!-- Filter Bar & Simulator Trigger -->
+            <div class="flex flex-wrap items-center justify-between gap-4 glass-panel p-4 rounded-2xl border border-darkBorder">
+                <div class="flex items-center space-x-2">
+                    <span class="text-xs text-slate-400 font-semibold">Filter:</span>
+                    <button onclick="filterLogs('ALL')" class="log-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand-600 text-white">All Logs</button>
+                    <button onclick="filterLogs('BLOCKED')" class="log-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-darkCard text-slate-400 hover:text-white border border-darkBorder">🛑 Blocked</button>
+                    <button onclick="filterLogs('WARNING')" class="log-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-darkCard text-slate-400 hover:text-white border border-darkBorder">⚠️ Warnings</button>
+                    <button onclick="filterLogs('INFO')" class="log-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-darkCard text-slate-400 hover:text-white border border-darkBorder">ℹ️ Safe</button>
+                </div>
+
+                <div class="flex items-center space-x-3">
+                    <button onclick="openSimulationModal()" class="px-3.5 py-1.5 rounded-lg bg-gemma-600 hover:bg-gemma-500 text-white text-xs font-semibold flex items-center space-x-2 transition shadow-md shadow-gemma-600/20">
+                        <i class="fa-solid fa-flask"></i>
+                        <span>Simulate 5-Min Kid Screen Event</span>
+                    </button>
+                    <button onclick="refreshLogs()" class="p-2 rounded-lg bg-darkCard border border-darkBorder text-slate-400 hover:text-white transition" title="Refresh Feed">
+                        <i class="fa-solid fa-rotate-right text-xs"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Activity Logs Stream Table / Cards -->
+            <div class="grid grid-cols-1 gap-3.5" id="logsFeedContainer">
+                <!-- Populated dynamically via JS -->
+            </div>
+        </div>
+
+        <!-- ==================== TAB 3: DEVICE PAIRING QR ==================== -->
+        <div id="tab-pairing" class="tab-content hidden flex-col items-center justify-center py-6">
+            <div class="max-w-md w-full glass-panel rounded-3xl border border-darkBorder p-8 text-center space-y-6 shadow-2xl">
+                <div>
+                    <div class="w-12 h-12 rounded-2xl bg-brand-600/20 border border-brand-500/30 flex items-center justify-center text-brand-400 mx-auto mb-3">
+                        <i class="fa-solid fa-qrcode text-2xl"></i>
+                    </div>
+                    <h2 class="text-xl font-extrabold text-white">Pair Kid Device</h2>
+                    <p class="text-xs text-slate-400 mt-1">Scan this QR code from the Umbrella Kid app to bind protection</p>
+                </div>
+
+                <!-- QR Code Container -->
+                <div class="bg-white p-4 rounded-2xl inline-block shadow-xl mx-auto">
+                    <div id="qrcodeCanvas"></div>
+                </div>
+
+                <!-- Family ID Copy Box -->
+                <div class="bg-darkCard border border-darkBorder p-3 rounded-xl flex items-center justify-between">
+                    <div class="text-left">
+                        <div class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Family Pairing ID</div>
+                        <div id="pairingFamilyIdText" class="text-sm font-mono font-bold text-brand-400">fam-umbrella-7729</div>
+                    </div>
+                    <button onclick="copyFamilyId()" class="px-3 py-1.5 rounded-lg bg-brand-600/20 hover:bg-brand-600/40 text-brand-300 text-xs font-semibold transition flex items-center space-x-1.5">
+                        <i class="fa-regular fa-copy"></i>
+                        <span>Copy</span>
+                    </button>
+                </div>
+
+                <!-- 3-Step Setup Instructions -->
+                <div class="text-left space-y-2.5 text-xs text-slate-300 bg-darkCard/50 p-4 rounded-xl border border-darkBorder">
+                    <div class="flex items-center space-x-2.5">
+                        <span class="w-5 h-5 rounded-full bg-brand-600 text-white font-bold flex items-center justify-center text-[10px]">1</span>
+                        <span>Open Umbrella app on your child's phone</span>
+                    </div>
+                    <div class="flex items-center space-x-2.5">
+                        <span class="w-5 h-5 rounded-full bg-brand-600 text-white font-bold flex items-center justify-center text-[10px]">2</span>
+                        <span>Tap <strong>"Scan QR Code"</strong> during initial setup</span>
+                    </div>
+                    <div class="flex items-center space-x-2.5">
+                        <span class="w-5 h-5 rounded-full bg-brand-600 text-white font-bold flex items-center justify-center text-[10px]">3</span>
+                        <span>Point camera at this screen to complete handshake</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ==================== TAB 4: ENFORCED ACTIVE RULES ==================== -->
+        <div id="tab-active-rules" class="tab-content hidden flex-col space-y-6">
+            <div class="glass-panel p-6 rounded-2xl border border-darkBorder space-y-6">
+                <div class="flex items-center justify-between pb-4 border-b border-darkBorder">
+                    <div>
+                        <h3 class="text-base font-bold text-white flex items-center space-x-2">
+                            <i class="fa-solid fa-shield-check text-emerald-400"></i>
+                            <span>Currently Enforced Protection Profile</span>
+                        </h3>
+                        <p class="text-xs text-slate-400 mt-0.5">Active across kid device VPN and Accessibility Services</p>
+                    </div>
+                    <button onclick="switchTab('generator')" class="px-3.5 py-1.5 rounded-lg bg-brand-600 hover:bg-brand-500 text-white text-xs font-semibold transition">
+                        <i class="fa-solid fa-pen-to-square mr-1"></i> Edit with AI
+                    </button>
+                </div>
+
+                <div id="activeProfileContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Populated dynamically -->
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modal: Kid 5-Min Screen Event Simulator -->
+    <div id="simModal" class="hidden fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="max-w-lg w-full glass-panel rounded-2xl border border-darkBorder p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-darkBorder pb-3">
+                <h3 class="text-sm font-bold text-white flex items-center space-x-2">
+                    <i class="fa-solid fa-mobile-screen text-gemma-400"></i>
+                    <span>Simulate 5-Min Screen Extraction Loop</span>
+                </h3>
+                <button onclick="closeSimulationModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <div class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">App Name</label>
+                    <input type="text" id="simAppName" value="Roblox" class="w-full bg-darkBg border border-darkBorder rounded-lg p-2.5 text-white">
+                </div>
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Extracted Screen Text Snippet (Simulated Accessibility Scrape)</label>
+                    <textarea id="simSnippet" rows="3" class="w-full bg-darkBg border border-darkBorder rounded-lg p-2.5 text-white font-mono text-xs">Playing Blox Fruit on Roblox server. User typed: let's trade accounts and chat privately.</textarea>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-300 mb-1">Severity Verdict</label>
+                        <select id="simSeverity" class="w-full bg-darkBg border border-darkBorder rounded-lg p-2 text-white">
+                            <option value="BLOCKED">🛑 BLOCKED (Critical)</option>
+                            <option value="WARNING">⚠️ WARNING</option>
+                            <option value="INFO">ℹ️ INFO (Safe)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-300 mb-1">Enforcement Action</label>
+                        <select id="simAction" class="w-full bg-darkBg border border-darkBorder rounded-lg p-2 text-white">
+                            <option value="OVERLAY_BLOCKED">UI Overlay Blocked</option>
+                            <option value="DNS_SINKHOLE">Local DNS Sinkhole</option>
+                            <option value="LOGGED_ONLY">Monitored & Logged</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-3 border-t border-darkBorder flex justify-end space-x-2">
+                <button onclick="closeSimulationModal()" class="px-4 py-2 rounded-lg bg-darkCard text-xs font-semibold text-slate-300">Cancel</button>
+                <button onclick="submitSimulatedLog()" class="px-4 py-2 rounded-lg bg-gemma-600 hover:bg-gemma-500 text-xs font-bold text-white shadow-lg">Push Simulated Log</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+    <!-- Application Script Logic -->
+    <script>
+        const API_BASE = window.location.origin;
+        let currentFamilyId = "fam-umbrella-7729";
+        let currentRuleDict = null;
+        let isGenerating = false;
+        let qrcodeInstance = null;
+
+        // Mock initial activity logs for immediate interactive inspection
+        let activityLogs = [
+            {
+                id: "log-1",
+                appName: "Roblox",
+                packageName: "com.roblox.client",
+                category: "GAMING",
+                severity: "BLOCKED",
+                actionTaken: "OVERLAY_BLOCKED",
+                aiReasoning: "Gemma 4 evaluated screen text: Detected active gaming session during scheduled school hours (10:15 AM).",
+                screenSnippet: "Roblox Home Screen: Adopt Me! server joined.",
+                timeAgo: "4m ago"
+            },
+            {
+                id: "log-2",
+                appName: "TikTok",
+                packageName: "com.zhiliaoapp.musically",
+                category: "SOCIAL_MEDIA",
+                severity: "WARNING",
+                actionTaken: "MONITORED",
+                aiReasoning: "Approaching 30-minute daily social media limit (24 mins elapsed today).",
+                screenSnippet: "For You Feed: #gaming compilation video.",
+                timeAgo: "22m ago"
+            },
+            {
+                id: "log-3",
+                appName: "Google Chrome",
+                packageName: "com.android.chrome",
+                category: "SEARCH",
+                severity: "INFO",
+                actionTaken: "DNS_SAFE_SEARCH",
+                aiReasoning: "Standard academic query evaluated as safe. SafeSearch VIP enforced locally.",
+                screenSnippet: "Search: 'Photosynthesis cellular biology revision'",
+                timeAgo: "1h ago"
+            }
+        ];
+
+        // Switch Active Tab
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.remove('bg-brand-600', 'text-white');
+                btn.classList.add('text-slate-400');
+            });
+
+            const targetTab = document.getElementById('tab-' + tabId);
+            const targetBtn = document.getElementById('tab-btn-' + tabId);
+
+            if (targetTab) targetTab.classList.remove('hidden');
+            if (targetBtn) {
+                targetBtn.classList.add('bg-brand-600', 'text-white');
+                targetBtn.classList.remove('text-slate-400');
+            }
+
+            if (tabId === 'pairing') {
+                renderQrCode();
+            }
+        }
+
+        // Render QR Code using QRCode.js
+        function renderQrCode() {
+            const container = document.getElementById('qrcodeCanvas');
+            if (!container) return;
+            container.innerHTML = '';
+            
+            const payload = `${currentFamilyId}::parent_pub_key_sec`;
+            qrcodeInstance = new QRCode(container, {
+                text: payload,
+                width: 200,
+                height: 200,
+                colorDark: "#0b0f19",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+
+        function setPrompt(text) {
+            document.getElementById('promptInput').value = text;
+            document.getElementById('promptInput').focus();
+        }
+
+        // Handle Natural Language Prompt to Cloud Run Backend
+        async function handleSendPrompt(e) {
+            e.preventDefault();
+            const input = document.getElementById('promptInput');
+            const prompt = input.value.trim();
+            if (!prompt || isGenerating) return;
+
+            // Append User message in chat
+            appendChatMessage('USER', prompt);
+            input.value = '';
+            isGenerating = true;
+            document.getElementById('sendBtn').disabled = true;
+
+            // Append Loading AI bubble
+            const loadingBubbleId = appendLoadingAiMessage();
+
+            try {
+                const response = await fetch(`${API_BASE}/api/generate-rules`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        family_id: currentFamilyId,
+                        prompt: prompt,
+                        existing_rules: currentRuleDict || {}
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Server returned status ${response.status}`);
+                }
+
+                const data = await response.json();
+                currentRuleDict = data.rule_dict;
+
+                // Replace loading bubble with AI response
+                removeMessage(loadingBubbleId);
+                appendChatMessage('AI', `I've formulated a structured <strong>RuleDict</strong> for your request: <em>"${prompt}"</em>.<br><span class="text-xs text-brand-300 mt-1 block">💡 ${data.explanation}</span>`);
+
+                // Update Visual RuleDict Panel
+                renderRuleDictCard(data.rule_dict, data.raw_json);
+                showToast("✨ Gemma 4 generated structured rules successfully!", "success");
+
+            } catch (err) {
+                console.error("Rule generation failed:", err);
+                removeMessage(loadingBubbleId);
+                appendChatMessage('AI', `❌ Error generating rules: ${err.message}. Please try rephrasing your request.`);
+                showToast("Failed to connect to backend", "error");
+            } finally {
+                isGenerating = false;
+                document.getElementById('sendBtn').disabled = false;
+            }
+        }
+
+        function appendChatMessage(sender, htmlContent) {
+            const history = document.getElementById('chatHistory');
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'flex items-start space-x-3 ' + (sender === 'USER' ? 'justify-end' : 'justify-start');
+
+            if (sender === 'USER') {
+                msgDiv.innerHTML = `
+                    <div class="bg-brand-600 text-white p-3.5 rounded-2xl rounded-tr-sm text-sm max-w-lg shadow-md">
+                        ${escapeHtml(htmlContent)}
+                    </div>
+                `;
+            } else {
+                msgDiv.innerHTML = `
+                    <div class="w-7 h-7 rounded-full bg-gemma-500 flex items-center justify-center text-white text-xs shrink-0 mt-0.5 shadow-sm">
+                        <i class="fa-solid fa-sparkles"></i>
+                    </div>
+                    <div class="bg-darkCard border border-darkBorder text-slate-200 p-4 rounded-2xl rounded-tl-sm text-sm max-w-xl shadow-sm">
+                        ${htmlContent}
+                    </div>
+                `;
+            }
+
+            history.appendChild(msgDiv);
+            history.scrollTop = history.scrollHeight;
+        }
+
+        function appendLoadingAiMessage() {
+            const id = 'msg-loading-' + Date.now();
+            const history = document.getElementById('chatHistory');
+            const msgDiv = document.createElement('div');
+            msgDiv.id = id;
+            msgDiv.className = 'flex items-start space-x-3 justify-start';
+            msgDiv.innerHTML = `
+                <div class="w-7 h-7 rounded-full bg-gemma-500 flex items-center justify-center text-white text-xs shrink-0 mt-0.5 animate-pulse">
+                    <i class="fa-solid fa-spinner fa-spin"></i>
+                </div>
+                <div class="bg-darkCard border border-darkBorder text-purple-300 p-3.5 rounded-2xl rounded-tl-sm text-xs flex items-center space-x-2">
+                    <span class="inline-block w-2 h-2 rounded-full bg-purple-400 animate-ping"></span>
+                    <span>Gemma 4 is analyzing parental intent and generating JSON schema...</span>
+                </div>
+            `;
+            history.appendChild(msgDiv);
+            history.scrollTop = history.scrollHeight;
+            return id;
+        }
+
+        function removeMessage(id) {
+            const el = document.getElementById(id);
+            if (el) el.remove();
+        }
+
+        // Render RuleDict in right-side visualizer
+        function renderRuleDictCard(ruleDict, rawJson) {
+            document.getElementById('ruleStatusBadge').textContent = 'Rules Structured';
+            document.getElementById('ruleStatusBadge').className = 'text-xs px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 font-semibold';
+            document.getElementById('deployRulesBtn').disabled = false;
+
+            const visualContainer = document.getElementById('ruleVisualCard');
+            const rawJsonElem = document.getElementById('jsonOutput');
+            rawJsonElem.textContent = rawJson || JSON.stringify(ruleDict, null, 2);
+
+            let categoriesHtml = (ruleDict.blocked_categories || []).map(cat => {
+                return `<span class="px-2.5 py-1 rounded-lg bg-red-500/15 border border-red-500/30 text-red-400 text-xs font-semibold flex items-center space-x-1.5"><i class="fa-solid fa-ban text-[10px]"></i><span>${cat}</span></span>`;
+            }).join('');
+
+            let keywordsHtml = (ruleDict.blocked_keywords || []).map(kw => {
+                return `<span class="px-2 py-0.5 rounded-md bg-darkBg border border-darkBorder text-slate-300 text-[11px] font-mono">#${kw}</span>`;
+            }).join('');
+
+            let appsHtml = (ruleDict.app_rules || []).map(app => {
+                return `
+                    <div class="flex items-center justify-between p-2 rounded-lg bg-darkBg/60 border border-darkBorder text-xs">
+                        <div class="flex items-center space-x-2">
+                            <i class="fa-solid fa-cubes text-brand-400"></i>
+                            <div>
+                                <div class="font-bold text-white">${app.app_name}</div>
+                                <div class="text-[10px] text-slate-400 font-mono">${app.package_name}</div>
+                            </div>
+                        </div>
+                        ${app.is_blocked ? '<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-red-500/20 text-red-400 border border-red-500/30">BLOCKED</span>' : '<span class="text-[10px] font-bold px-2 py-0.5 rounded bg-teal-500/20 text-teal-400">QUOTA</span>'}
+                    </div>
+                `;
+            }).join('');
+
+            visualContainer.innerHTML = `
+                <div class="space-y-4 text-xs">
+                    <!-- Explanation Alert -->
+                    <div class="bg-brand-500/10 border border-brand-500/20 p-3 rounded-xl text-brand-300 flex items-start space-x-2.5">
+                        <i class="fa-solid fa-circle-info text-sm mt-0.5 shrink-0"></i>
+                        <span>${ruleDict.explanation || 'Rules configured and ready for device sync.'}</span>
+                    </div>
+
+                    <!-- Blocked Categories -->
+                    <div>
+                        <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Blocked Categories</div>
+                        <div class="flex flex-wrap gap-1.5">${categoriesHtml || '<span class="text-slate-500">None</span>'}</div>
+                    </div>
+
+                    <!-- Monitored Keywords -->
+                    <div>
+                        <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">Monitored Screen Triggers</div>
+                        <div class="flex flex-wrap gap-1.5">${keywordsHtml || '<span class="text-slate-500">None</span>'}</div>
+                    </div>
+
+                    <!-- App Rules -->
+                    ${appsHtml ? `
+                        <div>
+                            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1.5">App Restrictions</div>
+                            <div class="space-y-1.5">${appsHtml}</div>
+                        </div>
+                    ` : ''}
+
+                    <!-- Bedtime & Curfews -->
+                    <div class="grid grid-cols-2 gap-2 pt-1">
+                        <div class="p-2.5 rounded-xl bg-darkCard border border-darkBorder flex items-center space-x-2">
+                            <i class="fa-solid fa-moon text-indigo-400 text-sm"></i>
+                            <div>
+                                <div class="text-[10px] text-slate-400 font-semibold">Bedtime Curfew</div>
+                                <div class="font-bold text-white text-xs">${ruleDict.bedtime_start ? ruleDict.bedtime_start + ' - ' + ruleDict.bedtime_end : 'Disabled'}</div>
+                            </div>
+                        </div>
+                        <div class="p-2.5 rounded-xl bg-darkCard border border-darkBorder flex items-center space-x-2">
+                            <i class="fa-solid fa-graduation-cap text-teal-400 text-sm"></i>
+                            <div>
+                                <div class="text-[10px] text-slate-400 font-semibold">School Hours</div>
+                                <div class="font-bold text-white text-xs">${ruleDict.school_hours_start ? ruleDict.school_hours_start + ' - ' + ruleDict.school_hours_end : 'Disabled'}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            renderActiveProfile(ruleDict);
+        }
+
+        // Render Enforced Profile Tab
+        function renderActiveProfile(ruleDict) {
+            const container = document.getElementById('activeProfileContainer');
+            if (!container) return;
+
+            container.innerHTML = `
+                <div class="p-4 rounded-xl bg-darkCard border border-darkBorder space-y-3">
+                    <div class="text-xs font-bold text-slate-400 uppercase">Enforced Categories</div>
+                    <div class="flex flex-wrap gap-2">
+                        ${(ruleDict.blocked_categories || []).map(c => `<span class="px-2 py-1 rounded bg-red-500/20 text-red-400 text-xs font-bold">${c}</span>`).join('')}
+                    </div>
+                </div>
+                <div class="p-4 rounded-xl bg-darkCard border border-darkBorder space-y-3">
+                    <div class="text-xs font-bold text-slate-400 uppercase">Schedules & Curfew</div>
+                    <div class="text-xs text-slate-200">
+                        <div>🌙 Bedtime: <strong>${ruleDict.bedtime_start || 'Off'} - ${ruleDict.bedtime_end || 'Off'}</strong></div>
+                        <div class="mt-1">🏫 School Hours: <strong>${ruleDict.school_hours_start || 'Off'} - ${ruleDict.school_hours_end || 'Off'}</strong></div>
+                        <div class="mt-1">🛡️ SafeSearch: <strong>${ruleDict.safe_search_forced ? 'FORCED ON' : 'Off'}</strong></div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Deploy rules to backend /sync/rules
+        async function deployCurrentRules() {
+            if (!currentRuleDict) return;
+            const btn = document.getElementById('deployRulesBtn');
+            btn.disabled = true;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-1"></i> Syncing...`;
+
+            try {
+                const response = await fetch(`${API_BASE}/sync/rules`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        family_id: currentFamilyId,
+                        encrypted_rules: JSON.stringify(currentRuleDict),
+                        kid_fcm_token: "mock_kid_fcm_token_device_01"
+                    })
+                });
+
+                showToast("🚀 Rules deployed! Silent FCM wake-up push sent to kid's device.", "success");
+                btn.innerHTML = `<i class="fa-solid fa-check mr-1"></i> Synced to Device`;
+                btn.className = "flex-1 py-2.5 px-3 rounded-xl bg-emerald-600 text-xs font-bold text-white shadow-lg transition flex items-center justify-center space-x-2";
+            } catch (err) {
+                showToast("Error syncing rules: " + err.message, "error");
+                btn.disabled = false;
+                btn.innerHTML = `<i class="fa-solid fa-tower-broadcast mr-1"></i> Retry Sync`;
+            }
+        }
+
+        // Render Activity Feed
+        function renderLogsFeed(filter = 'ALL') {
+            const container = document.getElementById('logsFeedContainer');
+            if (!container) return;
+
+            const filtered = activityLogs.filter(log => {
+                if (filter === 'ALL') return true;
+                return log.severity === filter;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center py-16 text-slate-500 glass-panel rounded-2xl border border-darkBorder">
+                        <i class="fa-solid fa-shield-cat text-4xl mb-3 opacity-30"></i>
+                        <p class="text-sm">No activity logs matching the selected filter.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(log => {
+                const [badgeClass, icon, badgeText] = log.severity === 'BLOCKED'
+                    ? ['bg-red-500/15 border-red-500/30 text-red-400', 'fa-solid fa-ban', '🛑 BLOCKED']
+                    : (log.severity === 'WARNING'
+                        ? ['bg-amber-500/15 border-amber-500/30 text-amber-400', 'fa-solid fa-triangle-exclamation', '⚠️ WARNING']
+                        : ['bg-emerald-500/15 border-emerald-500/30 text-emerald-400', 'fa-solid fa-check', 'ℹ️ SAFE']);
+
+                return `
+                    <div class="glass-panel rounded-2xl border border-darkBorder p-4 sm:p-5 hover:border-slate-700 transition shadow-sm space-y-3">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-9 h-9 rounded-xl bg-darkCard border border-darkBorder flex items-center justify-center text-brand-400 text-sm">
+                                    <i class="fa-solid fa-mobile-screen"></i>
+                                </div>
+                                <div>
+                                    <div class="flex items-center space-x-2">
+                                        <h4 class="font-bold text-sm text-white">${log.appName}</h4>
+                                        <span class="text-[10px] px-2 py-0.5 rounded bg-brand-500/10 text-brand-400 font-semibold border border-brand-500/20">${log.category}</span>
+                                    </div>
+                                    <span class="text-xs text-slate-400">${log.timeAgo} • Action: <strong class="text-slate-300 font-mono">${log.actionTaken}</strong></span>
+                                </div>
+                            </div>
+                            <span class="text-xs px-2.5 py-1 rounded-full border font-bold ${badgeClass}">
+                                <i class="${icon} text-[10px] mr-1"></i>${badgeText}
+                            </span>
+                        </div>
+
+                        <!-- AI Reasoning -->
+                        <div class="bg-darkCard/80 border border-darkBorder p-3 rounded-xl text-xs space-y-1.5">
+                            <div class="flex items-center space-x-1.5 text-gemma-400 font-semibold">
+                                <i class="fa-solid fa-brain text-[11px]"></i>
+                                <span>Gemma 4 Contextual SLM Verdict:</span>
+                            </div>
+                            <p class="text-slate-300 leading-relaxed">${log.aiReasoning}</p>
+                        </div>
+
+                        <!-- Screen Snippet (Expandable) -->
+                        <div class="text-[11px] text-slate-400 bg-darkBg/60 p-2.5 rounded-lg border border-darkBorder font-mono">
+                            <span class="text-slate-500 font-bold">EXTRACTED SCREEN DOM:</span> "${escapeHtml(log.screenSnippet)}"
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterLogs(severity) {
+            document.querySelectorAll('.log-filter-btn').forEach(btn => {
+                btn.className = 'log-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-darkCard text-slate-400 hover:text-white border border-darkBorder';
+            });
+            event.target.className = 'log-filter-btn px-3 py-1.5 rounded-lg text-xs font-semibold bg-brand-600 text-white';
+            renderLogsFeed(severity);
+        }
+
+        function openSimulationModal() {
+            document.getElementById('simModal').classList.remove('hidden');
+        }
+
+        function closeSimulationModal() {
+            document.getElementById('simModal').classList.add('hidden');
+        }
+
+        async function submitSimulatedLog() {
+            const appName = document.getElementById('simAppName').value;
+            const snippet = document.getElementById('simSnippet').value;
+            const severity = document.getElementById('simSeverity').value;
+            const action = document.getElementById('simAction').value;
+
+            const newLog = {
+                id: 'log-' + Date.now(),
+                appName: appName,
+                packageName: 'com.simulated.' + appName.toLowerCase().replace(/\s+/g, ''),
+                category: severity === 'BLOCKED' ? 'RESTRICTED' : 'GENERAL',
+                severity: severity,
+                actionTaken: action,
+                aiReasoning: `Gemma 4 evaluated 5-min screen summary of ${appName}: flagged based on active contextual rules.`,
+                screenSnippet: snippet,
+                timeAgo: 'Just now'
+            };
+
+            activityLogs.unshift(newLog);
+            renderLogsFeed();
+            closeSimulationModal();
+            showToast(`Simulated screen event for ${appName} pushed to live feed!`, "success");
+
+            // Also post to backend /sync/logs
+            try {
+                await fetch(`${API_BASE}/sync/logs`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        family_id: currentFamilyId,
+                        app_name: appName,
+                        severity: severity,
+                        screen_snippet: snippet,
+                        ai_reasoning: newLog.aiReasoning,
+                        action_taken: action
+                    })
+                });
+            } catch (ignored) {}
+        }
+
+        function toggleJsonInspector() {
+            const sec = document.getElementById('rawJsonSection');
+            const btnText = document.getElementById('jsonBtnText');
+            if (sec.classList.contains('hidden')) {
+                sec.classList.remove('hidden');
+                btnText.textContent = 'Hide Raw JSON';
+            } else {
+                sec.classList.add('hidden');
+                btnText.textContent = 'Inspect Raw JSON';
+            }
+        }
+
+        function copyJsonOutput() {
+            const text = document.getElementById('jsonOutput').textContent;
+            navigator.clipboard.writeText(text);
+            showToast("JSON copied to clipboard!", "info");
+        }
+
+        function copyFamilyId() {
+            navigator.clipboard.writeText(currentFamilyId);
+            showToast("Family ID copied: " + currentFamilyId, "info");
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            const color = type === 'success' ? 'border-emerald-500/50 bg-emerald-950/90 text-emerald-200' : (type === 'error' ? 'border-red-500/50 bg-red-950/90 text-red-200' : 'border-brand-500/50 bg-brand-950/90 text-brand-200');
+            toast.className = `p-3.5 rounded-xl border backdrop-blur-md shadow-xl text-xs font-semibold flex items-center space-x-2 pointer-events-auto transition duration-300 opacity-0 translate-y-2 ${color}`;
+            toast.innerHTML = `<i class="fa-solid ${type === 'success' ? 'fa-circle-check text-emerald-400' : (type === 'error' ? 'fa-circle-exclamation text-red-400' : 'fa-circle-info text-brand-400')}"></i><span>${message}</span>`;
+            
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.remove('opacity-0', 'translate-y-2');
+            }, 10);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+
+        function escapeHtml(str) {
+            return (str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        // Initialize on load
+        window.addEventListener('DOMContentLoaded', () => {
+            renderLogsFeed();
+            renderQrCode();
+        });
+    </script>
+</body>
+</html>

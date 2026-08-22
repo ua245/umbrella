@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">Umbrella Parent</string>
+    <string name="nav_dashboard">Activity</string>
+    <string name="nav_ai_rules">AI Rules</string>
+    <string name="nav_active_rules">Enforced</string>
+    <string name="nav_pairing">Pair Kid</string>
+</resources>
