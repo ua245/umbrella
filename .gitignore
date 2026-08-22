@@ -1,0 +1,52 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.buildlog/
+.history
+.svn/
+.idea/
+.vscode/
+
+# Flutter/Dart/Pub
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.packages
+.pub-cache/
+.pub/
+/build/
+/ios/Flutter/.last_build_id
+/ios/Pods/
+/ios/Runner.xcworkspace/xcuserdata/
+/android/app/build/
+/android/.gradle/
+/android/local.properties
+/android/workspace.xml
+/android/app/src/debug/
+/android/app/src/profile/
+/android/app/src/release/
+
+# Python / FastAPI
+__pycache__/
+*.py[cod]
+*.class
+venv/
+env/
+.env
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Firebase / Cloud Relay
+firebase-debug.log
+firebase-debug.*.log
+*.json
+
+# Specific to Umbrella App
+google-services.json
+GoogleService-Info.plist
+*serviceAccountKey.json
