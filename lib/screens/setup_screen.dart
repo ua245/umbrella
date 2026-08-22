@@ -43,37 +43,73 @@ class _SetupScreenState extends State<SetupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Umbrella Setup')),
-      body: Column(
-        children: [
-          Expanded(
-            flex: 2,
-            child: MobileScanner(
-              onDetect: _onDetect,
-            ),
-          ),
-          Expanded(
-            flex: 1,
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  const Text('Or Enter API Key Seamlessly:'),
-                  TextField(
-                    controller: _apiKeyController,
-                    decoration: InputDecoration(
-                      labelText: 'API Key',
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.save),
-                        onPressed: _saveApiKey,
-                      ),
-                    ),
-                  ),
-                ],
+      appBar: AppBar(
+        title: const Text('Umbrella Setup', style: TextStyle(fontWeight: FontWeight.bold)),
+        centerTitle: true,
+        elevation: 0,
+      ),
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                'Scan QR Code',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                textAlign: TextAlign.center,
               ),
-            ),
+              const SizedBox(height: 12),
+              Expanded(
+                flex: 2,
+                child: Card(
+                  elevation: 4,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  clipBehavior: Clip.antiAlias,
+                  child: MobileScanner(
+                    onDetect: _onDetect,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+              Card(
+                elevation: 2,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Column(
+                    children: [
+                      const Text(
+                        'Or Enter API Key Seamlessly:',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                      ),
+                      const SizedBox(height: 16),
+                      TextField(
+                        controller: _apiKeyController,
+                        decoration: InputDecoration(
+                          labelText: 'API Key',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          filled: true,
+                          prefixIcon: const Icon(Icons.vpn_key),
+                          suffixIcon: IconButton(
+                            icon: const Icon(Icons.save, color: Colors.blue),
+                            onPressed: _saveApiKey,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
