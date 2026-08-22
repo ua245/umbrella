@@ -37,8 +37,8 @@ graph TD
         P_UI[Jetpack Compose UI]
         P_Rules[Rule Input]
         
-        P_UI -- "E.g. Block gaming today" --> P_Rules
-        P_Rules -- POST /api/generate-rules --> FastAPI
+        P_UI -->|"E.g. Block gaming today"| P_Rules
+        P_Rules -->|"POST /api/generate-rules"| FastAPI
     end
 
     subgraph Cloud Relay ["☁️ Cloud Run Backend (FastAPI)"]
@@ -57,23 +57,23 @@ graph TD
         A11y[Accessibility Service]
         Enforcer[UI Overlay / Blocker]
         
-        FCM -. Wakes App for Rule Update .-> K_FCM
+        FCM -.->|"Wakes App for Rule Update"| K_FCM
         
-        A11y -- Scrapes DOM/Text <br/>(Every 5 mins) --> FastAPI
-        VPN -- DNS Intercepts --> FastAPI
+        A11y -->|"Scrapes DOM/Text (Every 5 mins)"| FastAPI
+        VPN -->|"DNS Intercepts"| FastAPI
     end
 
     %% Cloud Logic Flow
-    FastAPI -- Prompts AI for rule translation --> GemmaAPI
-    FastAPI -- Prompts AI for content evaluation --> GemmaAPI
-    GemmaAPI -- Returns JSON Verdict --> FastAPI
+    FastAPI -->|"Prompts AI for rule translation"| GemmaAPI
+    FastAPI -->|"Prompts AI for content evaluation"| GemmaAPI
+    GemmaAPI -->|"Returns JSON Verdict"| FastAPI
     
-    FastAPI -- Stores Logs & Rules --> Firestore
-    FastAPI -- Triggers Rule Update --> FCM
+    FastAPI -->|"Stores Logs & Rules"| Firestore
+    FastAPI -->|"Triggers Rule Update"| FCM
     
-    FastAPI -- Returns {"action": "BLOCK"} --> Enforcer
-    Enforcer -- Blocks Screen via Overlay --> A11y
-    Enforcer -- Injects SafeSearch --> VPN
+    FastAPI -->|"Returns Block Action"| Enforcer
+    Enforcer -->|"Blocks Screen via Overlay"| A11y
+    Enforcer -->|"Injects SafeSearch"| VPN
 
     class P_UI,P_Rules parent;
     class K_FCM,VPN,A11y,Enforcer kid;
